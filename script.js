@@ -79,7 +79,21 @@
 
   const today = todayDateString();
   const dayNumber = dayNumberFor(today);
-  const dailyWords = getDailyWords(today);
+  let dailyWords = [];
+
+  async function loadDailyWords() {
+    try {
+      const res = await fetch(`days/${today}.json`, { cache: "no-store" });
+      if (!res.ok) throw new Error("bad status " + res.status);
+      const data = await res.json();
+      if (!Array.isArray(data.words) || data.words.length !== ROUND_LENGTHS.length) {
+        throw new Error("unexpected payload shape");
+      }
+      return data.words;
+    } catch (e) {
+      return getDailyWords(today);
+    }
+  }
 
   let state = loadState();
   if (!state || state.date !== today) {
@@ -462,5 +476,8 @@
     }
   });
 
-  startWord();
+  loadDailyWords().then((words) => {
+    dailyWords = words;
+    startWord();
+  });
 })();

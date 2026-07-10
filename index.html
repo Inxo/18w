@@ -3,15 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>18 Words — собери слово</title>
+<title>18 слов — собери слово</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="app">
 
   <header class="app-header">
-    <div class="brand">18<span class="brand-accent">words</span></div>
-    <div class="day-info">День #<span id="dayNumber">1</span> · <span id="dateLabel"></span></div>
+    <div class="brand">18 <span class="brand-accent">слов</span></div>
+    <div class="header-right">
+      <div class="day-info">День #<span id="dayNumber">1</span> · <span id="dateLabel"></span></div>
+      <button id="btnTheme" class="theme-toggle" type="button" aria-label="Переключить тему">🌙</button>
+    </div>
   </header>
 
   <main id="gameScreen" class="screen">
@@ -64,6 +67,20 @@
     <button id="btnShare" class="ctrl-btn ctrl-primary" type="button">📋 Скопировать результат</button>
     <div class="summary-next">Новые слова завтра</div>
   </section>
+
+  <div id="adOverlay" class="ad-overlay hidden">
+    <div class="ad-card">
+      <div class="ad-label">РЕКЛАМА</div>
+      <div class="ad-video-placeholder">
+        <div class="ad-play-icon">▶</div>
+        <div class="ad-caption">Идёт показ ролика…</div>
+      </div>
+      <div class="ad-progress-track"><div id="adProgressFill" class="ad-progress-fill"></div></div>
+      <div class="ad-timer">Продолжение через <span id="adSeconds">30</span> сек</div>
+      <div class="ad-word-reveal">Слово было: <span id="adWord"></span></div>
+      <button id="btnAdClose" class="ctrl-btn ctrl-primary" type="button" disabled>Идёт показ…</button>
+    </div>
+  </div>
 
 </div>
 

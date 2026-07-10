@@ -3,7 +3,10 @@
 
   const ROUND_LENGTHS = [4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6];
   const TIME_PER_WORD = 30; // seconds
+  const AD_DURATION = 30; // seconds
   const STORAGE_KEY = "words18_progress_v1";
+  const THEME_KEY = "words18_theme";
+  const TILE_COLORS = ["#7c3aed", "#ec4899", "#0ea5e9", "#f59e0b", "#10b981", "#ef4444"];
 
   // ---------- deterministic RNG ----------
 
@@ -129,10 +132,42 @@
     sumStreak: document.getElementById("sumStreak"),
     sumGrid: document.getElementById("sumGrid"),
     btnShare: document.getElementById("btnShare"),
+    btnTheme: document.getElementById("btnTheme"),
+    adOverlay: document.getElementById("adOverlay"),
+    adProgressFill: document.getElementById("adProgressFill"),
+    adSeconds: document.getElementById("adSeconds"),
+    adWord: document.getElementById("adWord"),
+    btnAdClose: document.getElementById("btnAdClose"),
   };
 
   el.dayNumber.textContent = dayNumber;
   el.dateLabel.textContent = today;
+
+  // ---------- theme ----------
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    el.btnTheme.textContent = theme === "dark" ? "☀️" : "🌙";
+  }
+
+  function initTheme() {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved) {
+      applyTheme(saved);
+      return;
+    }
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    applyTheme(prefersDark ? "dark" : "light");
+  }
+
+  el.btnTheme.addEventListener("click", () => {
+    const current = document.documentElement.getAttribute("data-theme");
+    const next = current === "dark" ? "light" : "dark";
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+  });
+
+  initTheme();
 
   function isFinished() {
     return state.index >= ROUND_LENGTHS.length;
@@ -170,6 +205,7 @@
       btn.type = "button";
       btn.className = "letter-tile" + (letterObj.used ? " used" : "");
       btn.textContent = letterObj.char;
+      btn.style.backgroundColor = TILE_COLORS[idx % TILE_COLORS.length];
       btn.disabled = letterObj.used;
       btn.addEventListener("click", () => pickLetter(idx));
       el.letterTiles.appendChild(btn);
@@ -322,9 +358,46 @@
     el.score.textContent = state.score;
     el.progressFill.style.width = (state.index / ROUND_LENGTHS.length) * 100 + "%";
 
-    setTimeout(() => {
-      startWord();
-    }, success ? 900 : 1400);
+    if (success) {
+      setTimeout(() => startWord(), 900);
+    } else {
+      setTimeout(() => showAd(word, () => startWord()), 600);
+    }
+  }
+
+  function showAd(missedWord, onDone) {
+    let secondsLeft = AD_DURATION;
+    let settled = false;
+    let adInterval = null;
+
+    el.adWord.textContent = missedWord;
+    el.adSeconds.textContent = secondsLeft;
+    el.adProgressFill.style.width = "0%";
+    el.btnAdClose.disabled = true;
+    el.btnAdClose.textContent = "Идёт показ…";
+    el.adOverlay.classList.remove("hidden");
+
+    function finish() {
+      if (settled) return;
+      settled = true;
+      clearInterval(adInterval);
+      el.adOverlay.classList.add("hidden");
+      el.btnAdClose.onclick = null;
+      onDone();
+    }
+
+    el.btnAdClose.onclick = finish;
+
+    adInterval = setInterval(() => {
+      secondsLeft -= 1;
+      el.adSeconds.textContent = Math.max(secondsLeft, 0);
+      el.adProgressFill.style.width = ((AD_DURATION - secondsLeft) / AD_DURATION) * 100 + "%";
+      if (secondsLeft <= 0) {
+        el.btnAdClose.disabled = false;
+        el.btnAdClose.textContent = "Продолжить";
+        finish();
+      }
+    }, 1000);
   }
 
   function showSummary() {
@@ -351,7 +424,7 @@
 
     el.btnShare.onclick = () => {
       const grid = state.log.map((e) => (e.ok ? "🟩" : "🟥")).join("");
-      const text = `18 Words — День #${dayNumber}\n${state.correct}/${ROUND_LENGTHS.length} ✅  •  ${state.score} очков\n${grid}`;
+      const text = `18 слов — День #${dayNumber}\n${state.correct}/${ROUND_LENGTHS.length} ✅  •  ${state.score} очков\n${grid}`;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(() => {
           el.btnShare.textContent = "Скопировано!";

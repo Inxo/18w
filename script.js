@@ -376,12 +376,14 @@
     el.btnAdClose.disabled = true;
     el.btnAdClose.textContent = "Идёт показ…";
     el.adOverlay.classList.remove("hidden");
+    el.adOverlay.style.display = "flex";
 
     function finish() {
       if (settled) return;
       settled = true;
       clearInterval(adInterval);
       el.adOverlay.classList.add("hidden");
+      el.adOverlay.style.display = "none";
       el.btnAdClose.onclick = null;
       onDone();
     }

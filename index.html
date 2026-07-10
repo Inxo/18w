@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>18 Words — собери слово</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="app-header">
+    <div class="brand">18<span class="brand-accent">words</span></div>
+    <div class="day-info">День #<span id="dayNumber">1</span> · <span id="dateLabel"></span></div>
+  </header>
+
+  <main id="gameScreen" class="screen">
+
+    <div class="progress-row">
+      <div class="progress-label">Слово <span id="wordIndex">1</span> / 18 <span id="wordLenBadge" class="len-badge"></span></div>
+      <div class="score-label">Очки: <span id="score">0</span></div>
+    </div>
+    <div class="progress-bar-track"><div id="progressFill" class="progress-fill"></div></div>
+
+    <div class="timer-row">
+      <div class="timer-bar-track"><div id="timerFill" class="timer-fill"></div></div>
+      <div id="timerNum" class="timer-num">30</div>
+    </div>
+
+    <div id="answerSlots" class="answer-slots" aria-live="polite"></div>
+
+    <div id="letterTiles" class="letter-tiles"></div>
+
+    <div class="controls">
+      <button id="btnBackspace" class="ctrl-btn" type="button">⌫ Стереть</button>
+      <button id="btnShuffle" class="ctrl-btn" type="button">🔀 Перемешать</button>
+      <button id="btnSubmit" class="ctrl-btn ctrl-primary" type="button">Проверить ⏎</button>
+    </div>
+
+    <div id="feedback" class="feedback"></div>
+  </main>
+
+  <section id="summaryScreen" class="screen hidden">
+    <h1 class="summary-title">Итоги дня</h1>
+    <div class="summary-day">День #<span id="sumDayNumber">1</span> · <span id="sumDateLabel"></span></div>
+
+    <div class="summary-stats">
+      <div class="stat">
+        <div class="stat-value" id="sumCorrect">0/18</div>
+        <div class="stat-caption">верных слов</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="sumScore">0</div>
+        <div class="stat-caption">очков</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="sumStreak">0</div>
+        <div class="stat-caption">лучшая серия</div>
+      </div>
+    </div>
+
+    <div id="sumGrid" class="summary-grid"></div>
+
+    <button id="btnShare" class="ctrl-btn ctrl-primary" type="button">📋 Скопировать результат</button>
+    <div class="summary-next">Новые слова завтра</div>
+  </section>
+
+</div>
+
+<script src="words.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const ROUND_LENGTHS = [4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7];
+  const ROUND_LENGTHS = [4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6];
   const TIME_PER_WORD = 30; // seconds
   const STORAGE_KEY = "words18_progress_v1";
 

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>18 คำ — เรียงคำให้ถูก</title>
+<link rel="stylesheet" href="../style.css?v=2">
+</head>
+<body>
+<div class="app">
+
+  <header class="app-header">
+    <div class="brand">18 <span class="brand-accent">คำ</span></div>
+    <div class="header-right">
+      <div class="day-info">วันที่ #<span id="dayNumber">1</span> · <span id="dateLabel"></span></div>
+      <button id="btnTheme" class="theme-toggle" type="button" aria-label="สลับธีม">🌙</button>
+    </div>
+  </header>
+
+  <main id="gameScreen" class="screen">
+
+    <div class="progress-row">
+      <div class="progress-label">คำที่ <span id="wordIndex">1</span> / 18 <span id="wordLenBadge" class="len-badge"></span></div>
+      <div class="score-label">คะแนน: <span id="score">0</span></div>
+    </div>
+    <div class="progress-bar-track"><div id="progressFill" class="progress-fill"></div></div>
+
+    <div class="timer-row">
+      <div class="timer-bar-track"><div id="timerFill" class="timer-fill"></div></div>
+      <div id="timerNum" class="timer-num">30</div>
+    </div>
+
+    <div id="answerSlots" class="answer-slots" aria-live="polite"></div>
+
+    <div id="letterTiles" class="letter-tiles"></div>
+
+    <div class="controls">
+      <button id="btnBackspace" class="ctrl-btn" type="button">⌫ ลบ</button>
+      <button id="btnShuffle" class="ctrl-btn" type="button">🔀 สลับ</button>
+      <button id="btnSubmit" class="ctrl-btn ctrl-primary" type="button">ตรวจสอบ ⏎</button>
+    </div>
+
+    <div id="feedback" class="feedback"></div>
+  </main>
+
+  <section id="summaryScreen" class="screen hidden">
+    <h1 class="summary-title">สรุปผลวันนี้</h1>
+    <div class="summary-day">วันที่ #<span id="sumDayNumber">1</span> · <span id="sumDateLabel"></span></div>
+
+    <div class="summary-stats">
+      <div class="stat">
+        <div class="stat-value" id="sumCorrect">0/18</div>
+        <div class="stat-caption">คำที่ถูก</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="sumScore">0</div>
+        <div class="stat-caption">คะแนน</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="sumStreak">0</div>
+        <div class="stat-caption">ต่อเนื่องสูงสุด</div>
+      </div>
+    </div>
+
+    <div id="sumGrid" class="summary-grid"></div>
+
+    <button id="btnShare" class="ctrl-btn ctrl-primary" type="button">📋 คัดลอกผลลัพธ์</button>
+    <div class="summary-next">คำใหม่พรุ่งนี้</div>
+  </section>
+
+</div>
+
+<div id="adOverlay" class="ad-overlay hidden">
+  <div class="ad-card">
+    <div class="ad-label">โฆษณา</div>
+    <div class="ad-video-placeholder">
+      <div class="ad-play-icon">▶</div>
+      <div class="ad-caption">กำลังเล่นวิดีโอ…</div>
+    </div>
+    <div class="ad-progress-track"><div id="adProgressFill" class="ad-progress-fill"></div></div>
+    <div class="ad-timer">ดำเนินการต่อในอีก <span id="adSeconds">30</span> วินาที</div>
+    <div class="ad-word-reveal">คำตอบคือ: <span id="adWord"></span></div>
+    <button id="btnAdClose" class="ctrl-btn ctrl-primary" type="button" disabled>กำลังเล่น…</button>
+  </div>
+</div>
+
+<script src="words.js?v=1"></script>
+<script src="script.js?v=1"></script>
+</body>
+</html>

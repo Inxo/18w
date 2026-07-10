@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const ROUND_LENGTHS = [4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9];
+  const ROUND_LENGTHS = [4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7];
   const TIME_PER_WORD = 30; // seconds
   const STORAGE_KEY = "words18_progress_v1";
 
@@ -49,15 +49,23 @@
     return Math.max(1, Math.floor((t - epoch) / 86400000) + 1);
   }
 
+  function getLengthCounts() {
+    const counts = {};
+    for (const len of ROUND_LENGTHS) counts[len] = (counts[len] || 0) + 1;
+    return counts;
+  }
+
   function getDailyWords(dateStr) {
     const dayIndex = dayNumberFor(dateStr);
+    const counts = getLengthCounts();
     const words = [];
-    for (const len of [4, 5, 6, 7, 8, 9]) {
+    for (const len of Object.keys(counts).map(Number)) {
+      const count = counts[len];
       const pool = WORD_BANK[len];
       const rng = mulberry32(hashString("len-" + len));
       const shuffled = seededShuffle(pool, rng);
-      const start = (dayIndex * 3) % shuffled.length;
-      for (let i = 0; i < 3; i++) {
+      const start = (dayIndex * count) % shuffled.length;
+      for (let i = 0; i < count; i++) {
         words.push(shuffled[(start + i) % shuffled.length]);
       }
     }

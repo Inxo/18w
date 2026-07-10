@@ -426,7 +426,7 @@
 
     el.btnShare.onclick = () => {
       const grid = state.log.map((e) => (e.ok ? "🟩" : "🟥")).join("");
-      const text = `18 слов — День #${dayNumber}\n${state.correct}/${ROUND_LENGTHS.length} ✅  •  ${state.score} очков\n${grid}`;
+      const text = `18 слов — День #${dayNumber}\n${state.correct}/${ROUND_LENGTHS.length} ✅  •  ${state.score} очков\n${grid}\n${location.href}`;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(() => {
           el.btnShare.textContent = "Скопировано!";

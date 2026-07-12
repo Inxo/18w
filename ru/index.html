@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>18 слов — собери слово</title>
+<link rel="stylesheet" href="style.css?v=4">
+</head>
+<body>
+<div class="app">
+
+  <header class="app-header">
+    <div class="brand">18 <span class="brand-accent">слов</span></div>
+    <div class="header-right">
+      <div class="day-info">День #<span id="dayNumber">1</span> · <span id="dateLabel"></span></div>
+      <button id="btnTheme" class="theme-toggle" type="button" aria-label="Переключить тему">🌙</button>
+    </div>
+  </header>
+
+  <main id="gameScreen" class="screen">
+
+    <div class="progress-row">
+      <div class="progress-label">Слово <span id="wordIndex">1</span> / 18 <span id="wordLenBadge" class="len-badge"></span></div>
+      <div class="score-label">Очки: <span id="score">0</span></div>
+    </div>
+    <div class="progress-bar-track"><div id="progressFill" class="progress-fill"></div></div>
+
+    <div class="timer-row">
+      <div class="timer-bar-track"><div id="timerFill" class="timer-fill"></div></div>
+      <div id="timerNum" class="timer-num">30</div>
+    </div>
+
+    <div id="answerSlots" class="answer-slots" aria-live="polite"></div>
+
+    <div id="letterTiles" class="letter-tiles"></div>
+
+    <div class="controls">
+      <button id="btnBackspace" class="ctrl-btn" type="button">⌫ Стереть</button>
+      <button id="btnShuffle" class="ctrl-btn" type="button">🔀 Перемешать</button>
+      <button id="btnSubmit" class="ctrl-btn ctrl-primary" type="button">Проверить ⏎</button>
+    </div>
+
+    <div id="feedback" class="feedback"></div>
+  </main>
+
+  <section id="summaryScreen" class="screen hidden">
+    <h1 class="summary-title">Итоги дня</h1>
+    <div class="summary-day">День #<span id="sumDayNumber">1</span> · <span id="sumDateLabel"></span></div>
+
+    <div class="summary-stats">
+      <div class="stat">
+        <div class="stat-value" id="sumCorrect">0/18</div>
+        <div class="stat-caption">верных слов</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="sumScore">0</div>
+        <div class="stat-caption">очков</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="sumStreak">0</div>
+        <div class="stat-caption">лучшая серия</div>
+      </div>
+    </div>
+
+    <div id="sumGrid" class="summary-grid"></div>
+
+    <button id="btnShare" class="ctrl-btn ctrl-primary" type="button">📋 Скопировать результат</button>
+    <div id="summaryNext" class="summary-next">Новые слова завтра</div>
+
+    <div id="archiveSection" class="archive-section hidden">
+      <h2 class="archive-title">Прошлые дни</h2>
+      <div class="archive-row">
+        <select id="archiveSelect" class="archive-select"></select>
+        <button id="btnArchivePlay" class="ctrl-btn ctrl-primary" type="button">Играть</button>
+      </div>
+      <div id="archiveEmpty" class="archive-empty hidden">Вы сыграли во все доступные дни 🎉</div>
+    </div>
+  </section>
+
+</div>
+
+<div id="adOverlay" class="ad-overlay hidden">
+  <div class="ad-card">
+    <div class="ad-label">РЕКЛАМА</div>
+    <div class="ad-video-placeholder">
+      <div class="ad-play-icon">▶</div>
+      <div class="ad-caption">Идёт показ ролика…</div>
+    </div>
+    <div class="ad-progress-track"><div id="adProgressFill" class="ad-progress-fill"></div></div>
+    <div class="ad-timer">Продолжение через <span id="adSeconds">30</span> сек</div>
+    <div class="ad-word-reveal">Слово было: <span id="adWord"></span></div>
+    <button id="btnAdClose" class="ctrl-btn ctrl-primary" type="button" disabled>Идёт показ…</button>
+  </div>
+</div>
+
+<script src="words.js?v=2"></script>
+<script src="script.js?v=4"></script>
+</body>
+</html>

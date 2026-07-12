@@ -1,15 +1,16 @@
 # wordgen
 
-CLI that picks the 18 words of the day for "18 слов" / "18 คำ" and writes
-them to `<out>/<date>.json`, so the web client can just fetch a static file
-instead of picking words in the browser.
+CLI that picks the 18 words of the day for "18 слов" / "18 Words" / "18 คำ"
+and writes them to `<out>/<date>.json`, so the web client can just fetch a
+static file instead of picking words in the browser.
 
 ## Usage
 
 ```sh
 cd backend
-go run . -date=2026-07-10 -lang=ru               # writes ./2026-07-10.json
-go run . -date=2026-07-10 -lang=ru -out=../days  # writes ../days/2026-07-10.json
+go run . -date=2026-07-10 -lang=ru                  # writes ./2026-07-10.json
+go run . -date=2026-07-10 -lang=ru -out=../ru/days  # writes ../ru/days/2026-07-10.json
+go run . -date=2026-07-10 -lang=en -out=../en/days
 go run . -date=2026-07-10 -lang=th -out=../th/days
 ```
 
@@ -61,5 +62,9 @@ dictionary cycles through before repeating.
 `data/words-ru.json` and `data/words-th.json` were built from public word
 lists (frequency-ranked subtitle vocabulary for Russian, a segmentation
 dictionary for Thai), filtered to Cyrillic/Thai-only tokens, deduplicated,
-and passed through a small profanity blocklist. There's no in-repo script
-for this yet — regenerate by hand if you need to refresh them.
+and passed through a small profanity blocklist. `data/words-en.json` was
+built from the `wamerican` system dictionary, filtered to lowercase
+alphabetic-only entries (no proper nouns or contractions), ranked by
+`wordfreq` frequency to keep only common words, and passed through the same
+profanity blocklist. There's no in-repo script for this yet — regenerate by
+hand if you need to refresh them.

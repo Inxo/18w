@@ -5,10 +5,11 @@
   const TIME_PER_WORD = 30; // seconds
   const AD_DURATION = 30; // seconds
   const STORAGE_KEY = "words18_progress_v1";
+  const PLAYED_KEY = "words18_played_dates";
   const THEME_KEY = "words18_theme";
   const TILE_COLORS = ["#7c3aed", "#ec4899", "#0ea5e9", "#f59e0b", "#10b981", "#ef4444"];
 
-  // ---------- deterministic RNG ----------
+  // ---------- deterministic RNG (fallback word selection if days/*.json is unreachable) ----------
 
   function hashString(str) {
     let h = 2166136261;
@@ -58,7 +59,7 @@
     return counts;
   }
 
-  function getDailyWords(dateStr) {
+  function getWordsForDateLocally(dateStr) {
     const dayIndex = dayNumberFor(dateStr);
     const counts = getLengthCounts();
     const words = [];
@@ -75,15 +76,9 @@
     return words;
   }
 
-  // ---------- game state ----------
-
-  const today = todayDateString();
-  const dayNumber = dayNumberFor(today);
-  let dailyWords = [];
-
-  async function loadDailyWords() {
+  async function loadWordsForDate(dateStr) {
     try {
-      const res = await fetch(`days/${today}.json`, { cache: "no-store" });
+      const res = await fetch(`days/${dateStr}.json`, { cache: "no-store" });
       if (!res.ok) throw new Error("bad status " + res.status);
       const data = await res.json();
       if (!Array.isArray(data.words) || data.words.length !== ROUND_LENGTHS.length) {
@@ -91,27 +86,49 @@
       }
       return data.words;
     } catch (e) {
-      return getDailyWords(today);
+      return getWordsForDateLocally(dateStr);
     }
   }
 
-  let state = loadState();
-  if (!state || state.date !== today) {
-    state = { date: today, index: 0, score: 0, correct: 0, log: [] };
-    saveState();
+  async function loadAvailableDates() {
+    try {
+      const res = await fetch("days/index.json", { cache: "no-store" });
+      if (!res.ok) throw new Error("bad status " + res.status);
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      return [];
+    }
   }
 
-  let currentLetters = [];   // [{char, used}]
-  let currentAnswer = [];    // indices into currentLetters
-  let timeLeft = TIME_PER_WORD;
-  let timerHandle = null;
-  let roundLocked = false;
+  // ---------- played-dates history (across daily + archive rounds) ----------
 
-  function saveState() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  function loadPlayedDates() {
+    try {
+      const raw = localStorage.getItem(PLAYED_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
   }
 
-  function loadState() {
+  let playedDates = loadPlayedDates();
+
+  function markDatePlayed(dateStr) {
+    if (!playedDates.includes(dateStr)) {
+      playedDates.push(dateStr);
+      localStorage.setItem(PLAYED_KEY, JSON.stringify(playedDates));
+    }
+  }
+
+  // ---------- round state ----------
+  // `round` holds everything about the game currently being played, whether
+  // it's today's daily round or a replayed past day from the archive.
+
+  const today = todayDateString();
+
+  function loadDailyState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       return raw ? JSON.parse(raw) : null;
@@ -119,6 +136,38 @@
       return null;
     }
   }
+
+  function freshRound(date, isArchive) {
+    return { date, isArchive, words: [], index: 0, score: 0, correct: 0, log: [] };
+  }
+
+  let round = (function initRound() {
+    const saved = loadDailyState();
+    if (saved && saved.date === today) {
+      return { date: today, isArchive: false, words: [], index: saved.index, score: saved.score, correct: saved.correct, log: saved.log };
+    }
+    if (saved && saved.date !== today && saved.index >= ROUND_LENGTHS.length) {
+      markDatePlayed(saved.date);
+    }
+    return freshRound(today, false);
+  })();
+
+  function persistRound() {
+    if (round.isArchive) {
+      if (round.index >= ROUND_LENGTHS.length) markDatePlayed(round.date);
+      return;
+    }
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ date: round.date, index: round.index, score: round.score, correct: round.correct, log: round.log })
+    );
+  }
+
+  let currentLetters = [];   // [{char, used}]
+  let currentAnswer = [];    // indices into currentLetters
+  let timeLeft = TIME_PER_WORD;
+  let timerHandle = null;
+  let roundLocked = false;
 
   // ---------- DOM ----------
 
@@ -139,6 +188,8 @@
     btnBackspace: document.getElementById("btnBackspace"),
     btnShuffle: document.getElementById("btnShuffle"),
     btnSubmit: document.getElementById("btnSubmit"),
+    summaryTitle: document.querySelector(".summary-title"),
+    summaryNext: document.getElementById("summaryNext"),
     sumDayNumber: document.getElementById("sumDayNumber"),
     sumDateLabel: document.getElementById("sumDateLabel"),
     sumCorrect: document.getElementById("sumCorrect"),
@@ -147,15 +198,16 @@
     sumGrid: document.getElementById("sumGrid"),
     btnShare: document.getElementById("btnShare"),
     btnTheme: document.getElementById("btnTheme"),
+    archiveSection: document.getElementById("archiveSection"),
+    archiveSelect: document.getElementById("archiveSelect"),
+    archiveEmpty: document.getElementById("archiveEmpty"),
+    btnArchivePlay: document.getElementById("btnArchivePlay"),
     adOverlay: document.getElementById("adOverlay"),
     adProgressFill: document.getElementById("adProgressFill"),
     adSeconds: document.getElementById("adSeconds"),
     adWord: document.getElementById("adWord"),
     btnAdClose: document.getElementById("btnAdClose"),
   };
-
-  el.dayNumber.textContent = dayNumber;
-  el.dateLabel.textContent = today;
 
   // ---------- theme ----------
 
@@ -184,26 +236,29 @@
   initTheme();
 
   function isFinished() {
-    return state.index >= ROUND_LENGTHS.length;
+    return round.index >= ROUND_LENGTHS.length;
   }
 
   function startWord() {
+    el.dayNumber.textContent = dayNumberFor(round.date);
+    el.dateLabel.textContent = round.date;
+
     if (isFinished()) {
       showSummary();
       return;
     }
     roundLocked = false;
-    const word = dailyWords[state.index];
-    const rng = mulberry32(hashString(today + "-" + state.index + "-shuffle"));
+    const word = round.words[round.index];
+    const rng = mulberry32(hashString(round.date + "-" + round.index + "-shuffle"));
     const shuffledChars = seededShuffle(word.split(""), rng);
     currentLetters = shuffledChars.map((c) => ({ char: c, used: false }));
     currentAnswer = [];
     timeLeft = TIME_PER_WORD;
 
-    el.wordIndex.textContent = state.index + 1;
+    el.wordIndex.textContent = round.index + 1;
     el.wordLenBadge.textContent = word.length + " букв";
-    el.score.textContent = state.score;
-    el.progressFill.style.width = (state.index / ROUND_LENGTHS.length) * 100 + "%";
+    el.score.textContent = round.score;
+    el.progressFill.style.width = (round.index / ROUND_LENGTHS.length) * 100 + "%";
     el.feedback.textContent = "";
     el.feedback.className = "feedback";
 
@@ -227,7 +282,7 @@
   }
 
   function renderAnswer() {
-    const word = dailyWords[state.index];
+    const word = round.words[round.index];
     el.answerSlots.innerHTML = "";
     for (let i = 0; i < word.length; i++) {
       const slot = document.createElement("div");
@@ -244,7 +299,7 @@
 
   function pickLetter(idx) {
     if (roundLocked) return;
-    const word = dailyWords[state.index];
+    const word = round.words[round.index];
     if (currentLetters[idx].used) return;
     if (currentAnswer.length >= word.length) return;
     currentLetters[idx].used = true;
@@ -292,7 +347,7 @@
   }
 
   function checkAnswer() {
-    const word = dailyWords[state.index];
+    const word = round.words[round.index];
     const built = currentAnswer.map((idx) => currentLetters[idx].char).join("");
     if (built === word) {
       resolveWord(true);
@@ -338,20 +393,20 @@
     if (roundLocked) return;
     roundLocked = true;
     stopTimer();
-    const word = dailyWords[state.index];
+    const word = round.words[round.index];
 
     if (success) {
       const bonus = Math.max(0, timeLeft);
       const points = 10 + bonus;
-      state.score += points;
-      state.correct += 1;
-      state.log.push({ word, ok: true });
+      round.score += points;
+      round.correct += 1;
+      round.log.push({ word, ok: true });
       el.feedback.textContent = `Верно! +${points}`;
       el.feedback.className = "feedback good";
       const slots = el.answerSlots.querySelectorAll(".answer-slot");
       slots.forEach((s) => s.classList.add("correct"));
     } else {
-      state.log.push({ word, ok: false });
+      round.log.push({ word, ok: false });
       el.feedback.textContent = `Время вышло: ${word}`;
       el.feedback.className = "feedback bad";
       currentLetters.forEach((l) => (l.used = false));
@@ -367,10 +422,10 @@
       renderAnswer();
     }
 
-    state.index += 1;
-    saveState();
-    el.score.textContent = state.score;
-    el.progressFill.style.width = (state.index / ROUND_LENGTHS.length) * 100 + "%";
+    round.index += 1;
+    persistRound();
+    el.score.textContent = round.score;
+    el.progressFill.style.width = (round.index / ROUND_LENGTHS.length) * 100 + "%";
 
     if (success) {
       setTimeout(() => startWord(), 900);
@@ -416,19 +471,63 @@
     }, 1000);
   }
 
+  // ---------- archive: replay past days ----------
+
+  let availableDates = [];
+
+  function refreshArchivePicker() {
+    const playable = availableDates
+      .filter((d) => d < today && !playedDates.includes(d))
+      .sort()
+      .reverse();
+
+    if (playable.length === 0) {
+      el.archiveSelect.classList.add("hidden");
+      el.btnArchivePlay.classList.add("hidden");
+      el.archiveEmpty.classList.remove("hidden");
+      return;
+    }
+
+    el.archiveSelect.classList.remove("hidden");
+    el.btnArchivePlay.classList.remove("hidden");
+    el.archiveEmpty.classList.add("hidden");
+    el.archiveSelect.innerHTML = "";
+    for (const d of playable) {
+      const opt = document.createElement("option");
+      opt.value = d;
+      opt.textContent = `${d} (день #${dayNumberFor(d)})`;
+      el.archiveSelect.appendChild(opt);
+    }
+  }
+
+  el.btnArchivePlay.addEventListener("click", async () => {
+    const date = el.archiveSelect.value;
+    if (!date) return;
+    el.btnArchivePlay.disabled = true;
+    const words = await loadWordsForDate(date);
+    round = freshRound(date, true);
+    round.words = words;
+    el.btnArchivePlay.disabled = false;
+    el.summaryScreen.classList.add("hidden");
+    el.gameScreen.classList.remove("hidden");
+    startWord();
+  });
+
   function showSummary() {
     el.gameScreen.classList.add("hidden");
     el.summaryScreen.classList.remove("hidden");
 
-    el.sumDayNumber.textContent = dayNumber;
-    el.sumDateLabel.textContent = today;
-    el.sumCorrect.textContent = `${state.correct}/${ROUND_LENGTHS.length}`;
-    el.sumScore.textContent = state.score;
+    el.summaryTitle.textContent = round.isArchive ? "Итоги архивного дня" : "Итоги дня";
+    el.summaryNext.textContent = round.isArchive ? "Выберите ещё один день ниже" : "Новые слова завтра";
+    el.sumDayNumber.textContent = dayNumberFor(round.date);
+    el.sumDateLabel.textContent = round.date;
+    el.sumCorrect.textContent = `${round.correct}/${ROUND_LENGTHS.length}`;
+    el.sumScore.textContent = round.score;
 
     let bestStreak = 0;
     let cur = 0;
     el.sumGrid.innerHTML = "";
-    state.log.forEach((entry) => {
+    round.log.forEach((entry) => {
       cur = entry.ok ? cur + 1 : 0;
       bestStreak = Math.max(bestStreak, cur);
       const cell = document.createElement("div");
@@ -439,8 +538,8 @@
     el.sumStreak.textContent = bestStreak;
 
     el.btnShare.onclick = () => {
-      const grid = state.log.map((e) => (e.ok ? "🟩" : "🟥")).join("");
-      const text = `18 слов — День #${dayNumber}\n${state.correct}/${ROUND_LENGTHS.length} ✅  •  ${state.score} очков\n${grid}\n${location.href}`;
+      const grid = round.log.map((e) => (e.ok ? "🟩" : "🟥")).join("");
+      const text = `18 слов — День #${dayNumberFor(round.date)}\n${round.correct}/${ROUND_LENGTHS.length} ✅  •  ${round.score} очков\n${grid}\n${location.href}`;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(() => {
           el.btnShare.textContent = "Скопировано!";
@@ -448,12 +547,15 @@
         });
       }
     };
+
+    el.archiveSection.classList.remove("hidden");
+    refreshArchivePicker();
   }
 
   el.btnBackspace.addEventListener("click", backspace);
   el.btnShuffle.addEventListener("click", shuffleTiles);
   el.btnSubmit.addEventListener("click", () => {
-    if (currentAnswer.length === dailyWords[state.index].length) {
+    if (currentAnswer.length === round.words[round.index].length) {
       checkAnswer();
     }
   });
@@ -466,7 +568,7 @@
       return;
     }
     if (e.key === "Enter") {
-      if (currentAnswer.length === dailyWords[state.index].length) checkAnswer();
+      if (currentAnswer.length === round.words[round.index].length) checkAnswer();
       return;
     }
     const key = e.key.toLowerCase();
@@ -476,8 +578,15 @@
     }
   });
 
-  loadDailyWords().then((words) => {
-    dailyWords = words;
+  loadAvailableDates().then((dates) => {
+    availableDates = dates;
+    if (!el.summaryScreen.classList.contains("hidden")) {
+      refreshArchivePicker();
+    }
+  });
+
+  loadWordsForDate(today).then((words) => {
+    round.words = words;
     startWord();
   });
 })();

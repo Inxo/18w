@@ -49,6 +49,8 @@
 
 * { box-sizing: border-box; }
 
+.hidden { display: none; }
+
 html, body {
   margin: 0;
   padding: 0;
@@ -349,6 +351,45 @@ html, body {
   color: var(--text-dim);
   font-size: 13px;
   margin-top: 8px;
+}
+
+/* Archive: replay past days */
+
+.archive-section {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--tile-border);
+}
+.archive-section.hidden { display: none; }
+
+.archive-title {
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 12px;
+  color: var(--text-dim);
+}
+
+.archive-row {
+  display: flex;
+  gap: 10px;
+}
+
+.archive-select {
+  flex: 1;
+  padding: 12px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--tile-border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.archive-empty {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 13px;
 }
 
 /* Ad overlay */

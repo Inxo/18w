@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"time"
@@ -46,7 +47,12 @@ func run() error {
 	lang := flag.String("lang", "ru", "language code (must match a data/words-<lang>.json file)")
 	dict := flag.String("dict", "", "path to the word dictionary JSON (default: data/words-<lang>.json)")
 	out := flag.String("out", ".", "output directory for <date>.json")
+	reindex := flag.Bool("reindex", false, "instead of generating a day, scan -out and (re)write its index.json listing every YYYY-MM-DD.json found there")
 	flag.Parse()
+
+	if *reindex {
+		return writeIndex(*out)
+	}
 
 	if _, err := time.Parse("2006-01-02", *date); err != nil {
 		return fmt.Errorf("invalid -date %q, expected YYYY-MM-DD: %w", *date, err)
@@ -88,6 +94,43 @@ func run() error {
 	}
 
 	fmt.Printf("wrote %s (%d words, lang=%s)\n", outPath, len(words), *lang)
+	return nil
+}
+
+var dayFileNameRe = regexp.MustCompile(`^(\d{4}-\d{2}-\d{2})\.json$`)
+
+// writeIndex scans dir for <YYYY-MM-DD>.json files and writes an index.json
+// listing the dates found, sorted ascending. The client fetches this to know
+// which past days are available to replay.
+func writeIndex(dir string) error {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", dir, err)
+	}
+
+	var dates []string
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+		m := dayFileNameRe.FindStringSubmatch(e.Name())
+		if m == nil {
+			continue
+		}
+		dates = append(dates, m[1])
+	}
+	sort.Strings(dates)
+
+	data, err := json.MarshalIndent(dates, "", "  ")
+	if err != nil {
+		return fmt.Errorf("encoding index: %w", err)
+	}
+	outPath := filepath.Join(dir, "index.json")
+	if err := os.WriteFile(outPath, append(data, '\n'), 0o644); err != nil {
+		return fmt.Errorf("writing %s: %w", outPath, err)
+	}
+
+	fmt.Printf("wrote %s (%d dates)\n", outPath, len(dates))
 	return nil
 }
 

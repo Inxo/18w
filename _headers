@@ -1,0 +1,9 @@
+# Cloudflare Pages (and Netlify) read this file to set response headers.
+# Unlike GitHub Pages, Cloudflare Pages does not send CORS headers on
+# static assets by default. The <script> embed (embed.js) fetches
+# style.css, index.html and days/*.json from the game's own origin, which
+# requires Access-Control-Allow-Origin when the host page is on a
+# different domain. This is a public, unauthenticated static site, so a
+# wildcard is safe.
+/*
+  Access-Control-Allow-Origin: *

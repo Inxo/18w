@@ -126,8 +126,9 @@
     ⚠️ Cross-origin requirement: the browser fetches <code>style.css</code>, <code>index.html</code>
     and <code>days/*.json</code> from the game's own domain, which needs CORS enabled
     (<code>Access-Control-Allow-Origin</code>) if that domain differs from the host page's.
-    GitHub Pages sends this header by default; a custom static host may need it configured
-    explicitly.
+    GitHub Pages sends this header by default. Cloudflare Pages and Netlify do not — this repo
+    ships a <a href="_headers">_headers</a> file that both platforms read automatically to add it;
+    other static hosts may need the equivalent configured explicitly.
   </p>
 
   <h2>Live demo</h2>

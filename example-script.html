@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>18 Words — &lt;script&gt; embed example</title>
+<style>
+  :root {
+    --bg: #f6f3ff;
+    --bg-elevated: #ffffff;
+    --tile-border: #ddd3fb;
+    --text: #201a3a;
+    --text-dim: #746e96;
+    --accent: #7c3aed;
+    --accent-2: #ec4899;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #140f2b;
+      --bg-elevated: #1f1847;
+      --tile-border: #3c3178;
+      --text: #f5f2ff;
+      --text-dim: #b3a8e6;
+      --accent: #c084fc;
+      --accent-2: #f472b6;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+  }
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 6px;
+  }
+  h1 span {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  p.lead {
+    color: var(--text-dim);
+    font-size: 15px;
+    margin: 0 0 28px;
+    max-width: 64ch;
+  }
+  h2 {
+    font-size: 17px;
+    margin: 40px 0 10px;
+  }
+  pre {
+    background: var(--bg-elevated);
+    border: 1px solid var(--tile-border);
+    border-radius: 12px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .note {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .note.warn {
+    color: #b45309;
+  }
+  @media (prefers-color-scheme: dark) {
+    .note.warn { color: #fbbf24; }
+  }
+  .demo-block {
+    max-width: 480px;
+    border-radius: 24px;
+    border: 1px solid var(--tile-border);
+    background: var(--bg-elevated);
+    padding: 10px;
+    box-shadow: 0 20px 60px rgba(20, 15, 43, 0.12);
+  }
+  .demo-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-dim);
+    margin: 0 0 16px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>18 <span>Words</span> — &lt;script&gt; embed example</h1>
+  <p class="lead">
+    Instead of an <code>&lt;iframe&gt;</code>, the game can be dropped straight into a page
+    with a single <code>&lt;script&gt;</code> tag. It mounts inside its own closed
+    <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM" target="_blank" rel="noopener">Shadow DOM</a>
+    tree, so its markup, CSS and element ids never leak into (or collide with) the host page —
+    no cross-origin frame, no scrollbars to manage, no <code>postMessage</code> resize plumbing.
+  </p>
+  <p class="note">Prefer an iframe instead? See the <a href="example.html">iframe embed example</a>.</p>
+
+  <h2>Embed code</h2>
+  <pre><code>&lt;div data-words18 data-lang="en"&gt;&lt;/div&gt;
+&lt;script src="https://YOUR_DOMAIN/embed.js"&gt;&lt;/script&gt;</code></pre>
+  <p class="note">
+    <code>data-lang</code> accepts <code>en</code>, <code>ru</code> or <code>th</code> (defaults to <code>en</code>).
+    You can place several <code>[data-words18]</code> containers on one page — each gets its own
+    isolated widget instance, even with different languages. If you skip the container entirely,
+    <code>embed.js</code> inserts one right where the <code>&lt;script&gt;</code> tag sits, using
+    that tag's own <code>data-lang</code> attribute.
+  </p>
+  <p class="note warn">
+    ⚠️ Cross-origin requirement: the browser fetches <code>style.css</code>, <code>index.html</code>
+    and <code>days/*.json</code> from the game's own domain, which needs CORS enabled
+    (<code>Access-Control-Allow-Origin</code>) if that domain differs from the host page's.
+    GitHub Pages sends this header by default. Cloudflare Pages and Netlify do not — this repo
+    ships a <a href="_headers">_headers</a> file that both platforms read automatically to add it;
+    other static hosts may need the equivalent configured explicitly.
+  </p>
+
+  <h2>Live demo</h2>
+  <p class="note">This page and the widget below are served from the same origin, so no CORS setup was needed for this demo.</p>
+  <div class="demo-block">
+    <div class="demo-label">Rendered via &lt;script&gt; embed →</div>
+    <div data-words18 data-lang="en"></div>
+  </div>
+</div>
+
+<script src="embed.js"></script>
+</body>
+</html>

@@ -30,7 +30,7 @@ jobs:
           echo "start=$start" >> "$GITHUB_OUTPUT"
           echo "label=$label" >> "$GITHUB_OUTPUT"
 
-      - name: Generate words for next month (ru + th)
+      - name: Generate words for next month (ru + en + th)
         working-directory: backend
         run: ./generate.sh "${{ steps.range.outputs.start }}" 1
 
@@ -38,7 +38,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add days th/days
+          git add ru/days en/days th/days
           if git diff --cached --quiet; then
             echo "Nothing new to commit."
           else

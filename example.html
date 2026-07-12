@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>18 Words — iframe embed example</title>
+<style>
+  :root {
+    --bg: #f6f3ff;
+    --bg-elevated: #ffffff;
+    --tile-border: #ddd3fb;
+    --text: #201a3a;
+    --text-dim: #746e96;
+    --accent: #7c3aed;
+    --accent-2: #ec4899;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #140f2b;
+      --bg-elevated: #1f1847;
+      --tile-border: #3c3178;
+      --text: #f5f2ff;
+      --text-dim: #b3a8e6;
+      --accent: #c084fc;
+      --accent-2: #f472b6;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+  }
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 6px;
+  }
+  h1 span {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  p.lead {
+    color: var(--text-dim);
+    font-size: 15px;
+    margin: 0 0 28px;
+    max-width: 60ch;
+  }
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tab {
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--tile-border);
+    background: var(--bg-elevated);
+    color: var(--text);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .tab.active {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-color: transparent;
+    color: #fff;
+  }
+  .frame-shell {
+    max-width: 480px;
+    margin: 0 auto;
+    border-radius: 24px;
+    border: 1px solid var(--tile-border);
+    background: var(--bg-elevated);
+    padding: 10px;
+    box-shadow: 0 20px 60px rgba(20, 15, 43, 0.12);
+  }
+  iframe#game {
+    display: block;
+    width: 100%;
+    height: 720px; /* fallback height before the resize message arrives */
+    border: 0;
+    border-radius: 16px;
+    background: var(--bg);
+    transition: height 0.2s ease;
+  }
+  h2 {
+    font-size: 17px;
+    margin: 40px 0 10px;
+  }
+  pre {
+    background: var(--bg-elevated);
+    border: 1px solid var(--tile-border);
+    border-radius: 12px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .note {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>18 <span>Words</span> — iframe embed example</h1>
+  <p class="lead">
+    This page embeds the game exactly the way a third-party site would: a plain
+    <code>&lt;iframe&gt;</code> pointing at one of the game's language folders.
+    The game posts its content height to the parent window on load and on every
+    resize, so the iframe below grows and shrinks automatically instead of
+    showing scrollbars.
+  </p>
+  <p class="note">Prefer embedding without an iframe? See the <a href="example-script.html">&lt;script&gt; embed example</a> (Shadow DOM, no cross-origin frame).</p>
+
+  <div class="tabs" role="tablist" aria-label="Language">
+    <button class="tab active" type="button" data-src="en/index.html">🇬🇧 English</button>
+    <button class="tab" type="button" data-src="ru/index.html">🇷🇺 Русский</button>
+    <button class="tab" type="button" data-src="th/index.html">🇹🇭 ไทย</button>
+  </div>
+
+  <div class="frame-shell">
+    <iframe
+      id="game"
+      src="en/index.html"
+      title="18 Words game"
+      loading="lazy"
+      allow="clipboard-write"
+      referrerpolicy="strict-origin-when-cross-origin"
+    ></iframe>
+  </div>
+
+  <h2>Embed code</h2>
+  <pre><code>&lt;iframe
+  src="https://YOUR_DOMAIN/en/index.html"
+  title="18 Words game"
+  loading="lazy"
+  allow="clipboard-write"
+  style="width:100%; max-width:480px; height:720px; border:0; border-radius:16px;"
+&gt;&lt;/iframe&gt;</code></pre>
+  <p class="note">
+    Swap <code>en/</code> for <code>ru/</code> or <code>th/</code> to embed a different
+    language. <code>allow="clipboard-write"</code> lets the in-game "Copy Result"
+    button work across origins.
+  </p>
+
+  <h2>Optional: auto-resize listener</h2>
+  <pre><code>window.addEventListener("message", (event) =&gt; {
+  if (event.data &amp;&amp; event.data.type === "18words:resize") {
+    document.getElementById("game").style.height = event.data.height + "px";
+  }
+});</code></pre>
+  <p class="note">
+    The game only posts this message when it detects it is running inside an
+    iframe (<code>window.self !== window.top</code>), so it stays a no-op when
+    played standalone.
+  </p>
+</div>
+
+<script>
+  (function () {
+    var frame = document.getElementById("game");
+    var tabs = document.querySelectorAll(".tab");
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        tabs.forEach(function (t) { t.classList.remove("active"); });
+        tab.classList.add("active");
+        frame.src = tab.dataset.src;
+      });
+    });
+
+    window.addEventListener("message", function (event) {
+      if (event.source !== frame.contentWindow) return;
+      if (!event.data || event.data.type !== "18words:resize") return;
+      var height = Number(event.data.height);
+      if (height > 0) frame.style.height = Math.min(Math.max(height, 300), 4000) + "px";
+    });
+  })();
+</script>
+</body>
+</html>

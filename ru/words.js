@@ -1,5 +1,9 @@
 // Банк слов по длине (в буквах). Используется для ежедневной генерации раунда.
-const WORD_BANK = {
+// Namespaced under window.WORDS18_DATA instead of a bare `const` so that
+// two different-language widgets (or two instances of this file) can be
+// loaded on the same host page without a duplicate-declaration error.
+window.WORDS18_DATA = window.WORDS18_DATA || {};
+window.WORDS18_DATA.ru = {
   4: [
     "парк", "нога", "рука", "мама", "папа", "луна", "зима", "лето", "утро", "окно",
     "море", "поле", "лист", "стол", "стул", "шкаф", "нить", "сани", "воск", "пыль",

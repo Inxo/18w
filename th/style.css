@@ -1,4 +1,7 @@
-:root {
+/* `:host` rules only take effect when this stylesheet is injected inside a
+   Shadow DOM widget (see /embed.js); they are inert in the standalone pages
+   where this file is linked normally, since there's no shadow host there. */
+:root, :host {
   --bg: #f6f3ff;
   --bg-elevated: #ffffff;
   --tile-bg: #efeaff;
@@ -13,9 +16,19 @@
   --warn: #f59e0b;
   --radius: 14px;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* .app fills the viewport on a standalone page, but inside a widget it
+     should only be as tall as its content, and the overlay must stay
+     within the widget's own box instead of covering the host page. */
+  --app-min-height: 100vh;
+  --overlay-position: fixed;
 }
 
-:root[data-theme="dark"] {
+:host {
+  --app-min-height: 0;
+  --overlay-position: absolute;
+}
+
+:root[data-theme="dark"], :host([data-theme="dark"]) {
   --bg: #140f2b;
   --bg-elevated: #1f1847;
   --tile-bg: #2a2260;
@@ -31,7 +44,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root:not([data-theme="light"]), :host(:not([data-theme="light"])) {
     --bg: #140f2b;
     --bg-elevated: #1f1847;
     --tile-bg: #2a2260;
@@ -63,10 +76,14 @@ html, body {
 }
 
 .app {
+  position: relative; /* containing block for .ad-overlay when absolute */
   max-width: 480px;
   margin: 0 auto;
   padding: 16px 16px 40px;
-  min-height: 100vh;
+  min-height: var(--app-min-height, 100vh);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
   display: flex;
   flex-direction: column;
 }
@@ -396,7 +413,7 @@ html, body {
 /* Ad overlay */
 
 .ad-overlay {
-  position: fixed;
+  position: var(--overlay-position, fixed);
   inset: 0;
   background: rgba(10, 6, 24, 0.72);
   display: flex;

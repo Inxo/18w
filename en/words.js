@@ -1,5 +1,9 @@
 // Word bank by length (letters). Used to generate the daily round.
-const WORD_BANK = {
+// Namespaced under window.WORDS18_DATA instead of a bare `const` so that
+// two different-language widgets (or two instances of this file) can be
+// loaded on the same host page without a duplicate-declaration error.
+window.WORDS18_DATA = window.WORDS18_DATA || {};
+window.WORDS18_DATA.en = {
   4: [
     "ague", "aunt", "band", "bard", "best", "blah", "blat", "bosh", "clef", "corn", "duke", "dyer", "exit", "guys",
     "haws", "hide", "hump", "jabs", "jams", "keys", "kiln", "kiwi", "knot", "lams", "laws", "lent", "loan", "loss",

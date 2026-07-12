@@ -1,5 +1,11 @@
-(function () {
+window.Words18Mount = window.Words18Mount || {};
+window.Words18Mount.en = function (root, opts) {
   "use strict";
+
+  opts = opts || {};
+  const WORD_BANK = window.WORDS18_DATA.en;
+  const baseUrl = opts.baseUrl || document.baseURI;
+  const themeTarget = root === document ? document.documentElement : root.host;
 
   const ROUND_LENGTHS = [4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6];
   const TIME_PER_WORD = 30; // seconds
@@ -78,7 +84,7 @@
 
   async function loadWordsForDate(dateStr) {
     try {
-      const res = await fetch(`days/${dateStr}.json`, { cache: "no-store" });
+      const res = await fetch(new URL(`days/${dateStr}.json`, baseUrl), { cache: "no-store" });
       if (!res.ok) throw new Error("bad status " + res.status);
       const data = await res.json();
       if (!Array.isArray(data.words) || data.words.length !== ROUND_LENGTHS.length) {
@@ -92,7 +98,7 @@
 
   async function loadAvailableDates() {
     try {
-      const res = await fetch("days/index.json", { cache: "no-store" });
+      const res = await fetch(new URL("days/index.json", baseUrl), { cache: "no-store" });
       if (!res.ok) throw new Error("bad status " + res.status);
       const data = await res.json();
       return Array.isArray(data) ? data : [];
@@ -172,47 +178,47 @@
   // ---------- DOM ----------
 
   const el = {
-    dayNumber: document.getElementById("dayNumber"),
-    dateLabel: document.getElementById("dateLabel"),
-    gameScreen: document.getElementById("gameScreen"),
-    summaryScreen: document.getElementById("summaryScreen"),
-    wordIndex: document.getElementById("wordIndex"),
-    wordLenBadge: document.getElementById("wordLenBadge"),
-    score: document.getElementById("score"),
-    progressFill: document.getElementById("progressFill"),
-    timerFill: document.getElementById("timerFill"),
-    timerNum: document.getElementById("timerNum"),
-    answerSlots: document.getElementById("answerSlots"),
-    letterTiles: document.getElementById("letterTiles"),
-    feedback: document.getElementById("feedback"),
-    btnBackspace: document.getElementById("btnBackspace"),
-    btnShuffle: document.getElementById("btnShuffle"),
-    btnSubmit: document.getElementById("btnSubmit"),
-    summaryTitle: document.querySelector(".summary-title"),
-    summaryNext: document.getElementById("summaryNext"),
-    sumDayNumber: document.getElementById("sumDayNumber"),
-    sumDateLabel: document.getElementById("sumDateLabel"),
-    sumCorrect: document.getElementById("sumCorrect"),
-    sumScore: document.getElementById("sumScore"),
-    sumStreak: document.getElementById("sumStreak"),
-    sumGrid: document.getElementById("sumGrid"),
-    btnShare: document.getElementById("btnShare"),
-    btnTheme: document.getElementById("btnTheme"),
-    archiveSection: document.getElementById("archiveSection"),
-    archiveSelect: document.getElementById("archiveSelect"),
-    archiveEmpty: document.getElementById("archiveEmpty"),
-    btnArchivePlay: document.getElementById("btnArchivePlay"),
-    adOverlay: document.getElementById("adOverlay"),
-    adProgressFill: document.getElementById("adProgressFill"),
-    adSeconds: document.getElementById("adSeconds"),
-    adWord: document.getElementById("adWord"),
-    btnAdClose: document.getElementById("btnAdClose"),
+    dayNumber: root.getElementById("dayNumber"),
+    dateLabel: root.getElementById("dateLabel"),
+    gameScreen: root.getElementById("gameScreen"),
+    summaryScreen: root.getElementById("summaryScreen"),
+    wordIndex: root.getElementById("wordIndex"),
+    wordLenBadge: root.getElementById("wordLenBadge"),
+    score: root.getElementById("score"),
+    progressFill: root.getElementById("progressFill"),
+    timerFill: root.getElementById("timerFill"),
+    timerNum: root.getElementById("timerNum"),
+    answerSlots: root.getElementById("answerSlots"),
+    letterTiles: root.getElementById("letterTiles"),
+    feedback: root.getElementById("feedback"),
+    btnBackspace: root.getElementById("btnBackspace"),
+    btnShuffle: root.getElementById("btnShuffle"),
+    btnSubmit: root.getElementById("btnSubmit"),
+    summaryTitle: root.querySelector(".summary-title"),
+    summaryNext: root.getElementById("summaryNext"),
+    sumDayNumber: root.getElementById("sumDayNumber"),
+    sumDateLabel: root.getElementById("sumDateLabel"),
+    sumCorrect: root.getElementById("sumCorrect"),
+    sumScore: root.getElementById("sumScore"),
+    sumStreak: root.getElementById("sumStreak"),
+    sumGrid: root.getElementById("sumGrid"),
+    btnShare: root.getElementById("btnShare"),
+    btnTheme: root.getElementById("btnTheme"),
+    archiveSection: root.getElementById("archiveSection"),
+    archiveSelect: root.getElementById("archiveSelect"),
+    archiveEmpty: root.getElementById("archiveEmpty"),
+    btnArchivePlay: root.getElementById("btnArchivePlay"),
+    adOverlay: root.getElementById("adOverlay"),
+    adProgressFill: root.getElementById("adProgressFill"),
+    adSeconds: root.getElementById("adSeconds"),
+    adWord: root.getElementById("adWord"),
+    btnAdClose: root.getElementById("btnAdClose"),
   };
 
   // ---------- theme ----------
 
   function applyTheme(theme) {
-    document.documentElement.setAttribute("data-theme", theme);
+    themeTarget.setAttribute("data-theme", theme);
     el.btnTheme.textContent = theme === "dark" ? "☀️" : "🌙";
   }
 
@@ -227,7 +233,7 @@
   }
 
   el.btnTheme.addEventListener("click", () => {
-    const current = document.documentElement.getAttribute("data-theme");
+    const current = themeTarget.getAttribute("data-theme");
     const next = current === "dark" ? "light" : "dark";
     localStorage.setItem(THEME_KEY, next);
     applyTheme(next);
@@ -560,7 +566,7 @@
     }
   });
 
-  document.addEventListener("keydown", (e) => {
+  root.addEventListener("keydown", (e) => {
     if (isFinished() || roundLocked) return;
     if (e.key === "Backspace") {
       e.preventDefault();
@@ -589,4 +595,4 @@
     round.words = words;
     startWord();
   });
-})();
+};

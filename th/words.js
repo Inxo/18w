@@ -1,5 +1,9 @@
 // คลังคำภาษาไทยแยกตามจำนวนตัวอักษร ใช้สำหรับสุ่มคำประจำวัน
-const WORD_BANK = {
+// Namespaced under window.WORDS18_DATA instead of a bare `const` so that
+// two different-language widgets (or two instances of this file) can be
+// loaded on the same host page without a duplicate-declaration error.
+window.WORDS18_DATA = window.WORDS18_DATA || {};
+window.WORDS18_DATA.th = {
   4: [
     "เสือ", "ช้าง", "ผึ้ง", "เต่า", "กุ้ง", "ข้าว", "พริก", "ถั่ว", "กาแฟ", "เค้ก",
     "โต๊ะ", "พื้น", "ทะเล", "ทราย", "รถไฟ", "เรือ", "ตลาด", "แอร์", "แหวน", "กำไล",

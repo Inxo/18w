@@ -82,6 +82,14 @@ window.Words18Mount.th = function (root, opts) {
     return words;
   }
 
+  // A word entry is "word" or "word definition" (word, then a space, then its
+  // meaning). The meaning is shown during the ad break when present.
+  function parseWordEntry(raw) {
+    const spaceIdx = raw.indexOf(" ");
+    if (spaceIdx === -1) return { word: raw, definition: null };
+    return { word: raw.slice(0, spaceIdx), definition: raw.slice(spaceIdx + 1) };
+  }
+
   async function loadWordsForDate(dateStr) {
     try {
       const res = await fetch(new URL(`days/${dateStr}.json`, baseUrl), { cache: "no-store" });
@@ -90,9 +98,9 @@ window.Words18Mount.th = function (root, opts) {
       if (!Array.isArray(data.words) || data.words.length !== ROUND_LENGTHS.length) {
         throw new Error("unexpected payload shape");
       }
-      return data.words;
+      return data.words.map(parseWordEntry);
     } catch (e) {
-      return getWordsForDateLocally(dateStr);
+      return getWordsForDateLocally(dateStr).map(parseWordEntry);
     }
   }
 
@@ -104,21 +112,6 @@ window.Words18Mount.th = function (root, opts) {
       return Array.isArray(data) ? data : [];
     } catch (e) {
       return [];
-    }
-  }
-
-  // ---------- word definitions (shown during the ad break, when known) ----------
-
-  let definitions = {};
-
-  async function loadDefinitions() {
-    try {
-      const res = await fetch(new URL("definitions.json", baseUrl), { cache: "no-store" });
-      if (!res.ok) throw new Error("bad status " + res.status);
-      const data = await res.json();
-      return data && typeof data === "object" ? data : {};
-    } catch (e) {
-      return {};
     }
   }
 
@@ -271,7 +264,7 @@ window.Words18Mount.th = function (root, opts) {
       return;
     }
     roundLocked = false;
-    const word = round.words[round.index];
+    const word = round.words[round.index].word;
     const rng = mulberry32(hashString(round.date + "-" + round.index + "-shuffle"));
     const shuffledChars = seededShuffle(word.split(""), rng);
     currentLetters = shuffledChars.map((c) => ({ char: c, used: false }));
@@ -305,7 +298,7 @@ window.Words18Mount.th = function (root, opts) {
   }
 
   function renderAnswer() {
-    const word = round.words[round.index];
+    const word = round.words[round.index].word;
     el.answerSlots.innerHTML = "";
     for (let i = 0; i < word.length; i++) {
       const slot = document.createElement("div");
@@ -322,7 +315,7 @@ window.Words18Mount.th = function (root, opts) {
 
   function pickLetter(idx) {
     if (roundLocked) return;
-    const word = round.words[round.index];
+    const word = round.words[round.index].word;
     if (currentLetters[idx].used) return;
     if (currentAnswer.length >= word.length) return;
     currentLetters[idx].used = true;
@@ -370,7 +363,7 @@ window.Words18Mount.th = function (root, opts) {
   }
 
   function checkAnswer() {
-    const word = round.words[round.index];
+    const word = round.words[round.index].word;
     const built = currentAnswer.map((idx) => currentLetters[idx].char).join("");
     if (built === word) {
       resolveWord(true);
@@ -416,7 +409,8 @@ window.Words18Mount.th = function (root, opts) {
     if (roundLocked) return;
     roundLocked = true;
     stopTimer();
-    const word = round.words[round.index];
+    const entry = round.words[round.index];
+    const word = entry.word;
 
     if (success) {
       const bonus = Math.max(0, timeLeft);
@@ -453,17 +447,16 @@ window.Words18Mount.th = function (root, opts) {
     if (success) {
       setTimeout(() => startWord(), 900);
     } else {
-      setTimeout(() => showAd(word, () => startWord()), 600);
+      setTimeout(() => showAd(word, entry.definition, () => startWord()), 600);
     }
   }
 
-  function showAd(missedWord, onDone) {
+  function showAd(missedWord, definition, onDone) {
     let secondsLeft = AD_DURATION;
     let settled = false;
     let adInterval = null;
 
     el.adWord.textContent = missedWord;
-    const definition = definitions[missedWord];
     if (definition) {
       el.adDefinitionText.textContent = definition;
       el.adDefinition.classList.remove("hidden");
@@ -585,7 +578,7 @@ window.Words18Mount.th = function (root, opts) {
   el.btnBackspace.addEventListener("click", backspace);
   el.btnShuffle.addEventListener("click", shuffleTiles);
   el.btnSubmit.addEventListener("click", () => {
-    if (currentAnswer.length === round.words[round.index].length) {
+    if (currentAnswer.length === round.words[round.index].word.length) {
       checkAnswer();
     }
   });
@@ -598,7 +591,7 @@ window.Words18Mount.th = function (root, opts) {
       return;
     }
     if (e.key === "Enter") {
-      if (currentAnswer.length === round.words[round.index].length) checkAnswer();
+      if (currentAnswer.length === round.words[round.index].word.length) checkAnswer();
       return;
     }
     const key = e.key;
@@ -613,10 +606,6 @@ window.Words18Mount.th = function (root, opts) {
     if (!el.summaryScreen.classList.contains("hidden")) {
       refreshArchivePicker();
     }
-  });
-
-  loadDefinitions().then((data) => {
-    definitions = data;
   });
 
   loadWordsForDate(today).then((words) => {

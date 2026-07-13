@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>18 слов — собери слово</title>
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 <div class="app">
@@ -89,13 +89,14 @@
     <div class="ad-progress-track"><div id="adProgressFill" class="ad-progress-fill"></div></div>
     <div class="ad-timer">Продолжение через <span id="adSeconds">30</span> сек</div>
     <div class="ad-word-reveal">Слово было: <span id="adWord"></span></div>
+    <div id="adDefinition" class="ad-definition hidden">Значение: <span id="adDefinitionText"></span></div>
     <button id="btnAdClose" class="ctrl-btn ctrl-primary" type="button" disabled>Идёт показ…</button>
   </div>
 </div>
 
 <script src="words.js?v=3"></script>
 <script src="iframe-resize.js?v=1"></script>
-<script src="script.js?v=5"></script>
+<script src="script.js?v=6"></script>
 <script>Words18Mount.ru(document);</script>
 </body>
 </html>

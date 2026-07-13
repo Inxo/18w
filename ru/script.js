@@ -107,6 +107,21 @@ window.Words18Mount.ru = function (root, opts) {
     }
   }
 
+  // ---------- word definitions (shown during the ad break, when known) ----------
+
+  let definitions = {};
+
+  async function loadDefinitions() {
+    try {
+      const res = await fetch(new URL("definitions.json", baseUrl), { cache: "no-store" });
+      if (!res.ok) throw new Error("bad status " + res.status);
+      const data = await res.json();
+      return data && typeof data === "object" ? data : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
   // ---------- played-dates history (across daily + archive rounds) ----------
 
   function loadPlayedDates() {
@@ -212,6 +227,8 @@ window.Words18Mount.ru = function (root, opts) {
     adProgressFill: root.getElementById("adProgressFill"),
     adSeconds: root.getElementById("adSeconds"),
     adWord: root.getElementById("adWord"),
+    adDefinition: root.getElementById("adDefinition"),
+    adDefinitionText: root.getElementById("adDefinitionText"),
     btnAdClose: root.getElementById("btnAdClose"),
   };
 
@@ -446,6 +463,13 @@ window.Words18Mount.ru = function (root, opts) {
     let adInterval = null;
 
     el.adWord.textContent = missedWord;
+    const definition = definitions[missedWord];
+    if (definition) {
+      el.adDefinitionText.textContent = definition;
+      el.adDefinition.classList.remove("hidden");
+    } else {
+      el.adDefinition.classList.add("hidden");
+    }
     el.adSeconds.textContent = secondsLeft;
     el.adProgressFill.style.width = "0%";
     el.btnAdClose.disabled = true;
@@ -589,6 +613,10 @@ window.Words18Mount.ru = function (root, opts) {
     if (!el.summaryScreen.classList.contains("hidden")) {
       refreshArchivePicker();
     }
+  });
+
+  loadDefinitions().then((data) => {
+    definitions = data;
   });
 
   loadWordsForDate(today).then((words) => {

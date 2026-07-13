@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>18 คำ — เรียงคำให้ถูก</title>
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 <div class="app">
@@ -89,13 +89,14 @@
     <div class="ad-progress-track"><div id="adProgressFill" class="ad-progress-fill"></div></div>
     <div class="ad-timer">ดำเนินการต่อในอีก <span id="adSeconds">30</span> วินาที</div>
     <div class="ad-word-reveal">คำตอบคือ: <span id="adWord"></span></div>
+    <div id="adDefinition" class="ad-definition hidden">ความหมาย: <span id="adDefinitionText"></span></div>
     <button id="btnAdClose" class="ctrl-btn ctrl-primary" type="button" disabled>กำลังเล่น…</button>
   </div>
 </div>
 
 <script src="words.js?v=2"></script>
 <script src="iframe-resize.js?v=1"></script>
-<script src="script.js?v=4"></script>
+<script src="script.js?v=5"></script>
 <script>Words18Mount.th(document);</script>
 </body>
 </html>

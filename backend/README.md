@@ -39,6 +39,14 @@ Each key is a word length; the client currently needs at least 4, 5 and 6
 letter words, 3000 of each is comfortable headroom (with 6 words picked per
 length per day, the daily rotation only repeats every 3000/6 = 500 days).
 
+Each entry is either just the word (`"biff"`) or the word followed by a space
+and its definition (`"biff a sharp blow or punch (informal)"`). The client
+splits on the first space; a word with no definition yet is simply left as-is
+and the client shows no meaning for it. The word's length (used to bucket it
+by key and to size its game tile row) is always just the part before the
+space, so appending a definition never changes which bucket a word belongs
+in.
+
 ## Selection algorithm
 
 Same idea as the client used to run in-browser: the day number since
@@ -56,6 +64,9 @@ dictionary cycles through before repeating.
   "words": ["...", "... 18 words total"]
 }
 ```
+
+Entries carry the same optional `"word definition"` format as the source
+dictionary (it's just copied straight through by the selection algorithm).
 
 ## Regenerating the bundled dictionaries
 
